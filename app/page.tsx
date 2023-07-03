@@ -1,95 +1,70 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
+
+import AddressInput from "@/components/AddressInput";
+import apiUrl from "@/util/apiUrl";
+import { List, ListItem, Paper, Stack, Typography } from "@mui/material";
+import { useState } from "react";
+import useSWR from "swr";
+import superjson from "superjson";
+import { z } from "zod";
+
+const resourcesSchema = z.object({
+  resources: z.array(z.object({ name: z.string(), id: z.string() })),
+});
 
 export default function Home() {
+  const [address, setAddress] = useState("");
+  const [latLng, setLatLng] = useState<{ lat: number; lng: number }>();
+  const { data, isLoading } = useSWR(
+    latLng ? apiUrl(`resources?lat=${latLng.lat}&lng=${latLng.lng}`) : null,
+    async (url) => {
+      const response = await fetch(url);
+      if (response.ok) {
+        return resourcesSchema.parse(superjson.parse(await response.text()));
+      } else {
+        throw new Error("could not load resources");
+      }
+    }
+  );
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
+    <Paper component="main" sx={{ padding: 1, margin: 1 }}>
+      <Stack spacing={1}>
+        <Typography variant="h1">food planner</Typography>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+          }}
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+          <AddressInput
+            value={address}
+            onChange={(e) => {
+              setAddress(e.target.value);
+            }}
+            onPlaceSelected={(place) => {
+              const { lat, lng } = place?.geometry?.location
+                ? {
+                    lat: place.geometry.location.lat(),
+                    lng: place.geometry.location.lng(),
+                  }
+                : { lat: undefined, lng: undefined };
+              if (lat && lng) {
+                if (place.formatted_address) {
+                  setAddress(place.formatted_address);
+                }
+                setLatLng({ lat, lng });
+              }
+            }}
+            loading={isLoading}
+          />
+        </form>
+        {data ? (
+          <List>
+            {data.resources.map((resource) => (
+              <ListItem key={resource.id}>{resource.name}</ListItem>
+            ))}
+          </List>
+        ) : null}
+      </Stack>
+    </Paper>
+  );
 }
