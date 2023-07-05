@@ -4,6 +4,12 @@ This is a sample Lemontree client project that connects to the Lemontree API, an
 
 ## Getting started
 
+### 0. Install dependencies
+
+```
+npm install
+```
+
 ### 1. You will need a `.env.local` file on the root, that should look like:
 
 ```
