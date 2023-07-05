@@ -35,3 +35,5 @@ npm run dev
 ```
 
 Everything should be running on [http://localhost:3000](http://localhost:3000)!
+
+<img width="736" alt="image" src="https://github.com/lemontreefoods/foodplanner/assets/18301/d5e856c1-005f-4e1d-bcdf-4e17bfaa2c74">
