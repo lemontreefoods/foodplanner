@@ -10,7 +10,9 @@ This is a sample Lemontree client project that connects to the Lemontree API, an
 npm install
 ```
 
-### 1. You will need a `.env.local` file on the root, that should look like:
+### 1. Configure environment variables
+
+You will need a `.env.local` file on the root, that should look like:
 
 ```
 NEXT_PUBLIC_LEMONTREE_PLATFORM_ORIGIN="https://platform.lemontreefoods.org"
